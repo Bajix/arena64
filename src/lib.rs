@@ -7,7 +7,7 @@ use std::{
     sync::atomic::{AtomicU64, Ordering},
 };
 
-const IDX: usize = (1 << 8) - 1;
+const IDX: usize = (1 << 6) - 1;
 const IDX_MASK: usize = !IDX;
 
 /// An indexed arena designed to allow slots to be converted to and from raw-pointers
