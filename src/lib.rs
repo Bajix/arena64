@@ -18,6 +18,12 @@ pub struct Arena64<T> {
     next: Lazy<Box<Arena64<T>>>,
 }
 
+impl<T> Default for Arena64<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T> Arena64<T> {
     /// Create with an initial capacity of 64
     pub const fn new() -> Self {
@@ -31,7 +37,7 @@ impl<T> Arena64<T> {
     }
 
     /// Inserts value into an unoccupied [`Slot`], allocating as necessary in increments of 64.
-    pub fn insert<'a>(&'a self, value: T) -> Slot<'a, T> {
+    pub fn insert(&self, value: T) -> Slot<'_, T> {
         let mut occupancy = self.occupancy.load(Ordering::Acquire);
 
         let idx = loop {
@@ -71,7 +77,7 @@ pub struct Slot<'a, T> {
     idx: usize,
 }
 
-impl<'a, T> Slot<'a, T> {
+impl<T> Slot<'_, T> {
     pub fn take(self) -> T {
         let value = unsafe {
             mem::replace(
@@ -104,25 +110,25 @@ impl<'a, T> Slot<'a, T> {
     }
 }
 
-unsafe impl<'a, T> Send for Slot<'a, T> where T: Send {}
-unsafe impl<'a, T> Sync for Slot<'a, T> where T: Sync {}
+unsafe impl<T> Send for Slot<'_, T> where T: Send {}
+unsafe impl<T> Sync for Slot<'_, T> where T: Sync {}
 
-impl<'a, T> Deref for Slot<'a, T> {
+impl<T> Deref for Slot<'_, T> {
     type Target = T;
     fn deref(&self) -> &Self::Target {
-        unsafe { (&*self.arena.slots[self.idx].get()).assume_init_ref() }
+        unsafe { (*self.arena.slots[self.idx].get()).assume_init_ref() }
     }
 }
 
-impl<'a, T> DerefMut for Slot<'a, T> {
+impl<T> DerefMut for Slot<'_, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        unsafe { (&mut *self.arena.slots[self.idx].get()).assume_init_mut() }
+        unsafe { (*self.arena.slots[self.idx].get()).assume_init_mut() }
     }
 }
 
-impl<'a, T> Drop for Slot<'a, T> {
+impl<T> Drop for Slot<'_, T> {
     fn drop(&mut self) {
-        unsafe { (&mut *self.arena.slots[self.idx].get()).assume_init_drop() }
+        unsafe { (*self.arena.slots[self.idx].get()).assume_init_drop() }
         self.arena
             .occupancy
             .fetch_and(!(1 << self.idx), Ordering::Release);
