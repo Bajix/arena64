@@ -1,21 +1,26 @@
-use once_cell::sync::Lazy;
-use std::{
+#![no_std]
+
+extern crate alloc;
+
+use alloc::boxed::Box;
+use core::{
     cell::UnsafeCell,
     mem::{self, forget, MaybeUninit},
     ops::{Deref, DerefMut},
     ptr::addr_of,
     sync::atomic::{AtomicU64, Ordering},
 };
+use once_cell::race::OnceBox;
 
 const IDX: usize = (1 << 6) - 1;
 const IDX_MASK: usize = !IDX;
 
-/// An indexed arena designed to allow slots to be converted to and from raw-pointers
+/// An indexed arena designed to allow slots to be converted into/from raw-pointers
 #[repr(align(64))]
 pub struct Arena64<T> {
     occupancy: AtomicU64,
     slots: [UnsafeCell<MaybeUninit<T>>; 64],
-    next: Lazy<Box<Arena64<T>>>,
+    next: OnceBox<Arena64<T>>,
 }
 
 impl<T> Default for Arena64<T> {
@@ -32,7 +37,7 @@ impl<T> Arena64<T> {
         Arena64 {
             occupancy: AtomicU64::new(0),
             slots,
-            next: Lazy::new(|| Box::new(Arena64::new())),
+            next: OnceBox::new(),
         }
     }
 
@@ -53,7 +58,10 @@ impl<T> Arena64<T> {
                     break least_significant_bit.trailing_zeros();
                 }
             } else {
-                return self.next.insert(value);
+                return self
+                    .next
+                    .get_or_init(|| unsafe { Box::new_uninit().assume_init() })
+                    .insert(value);
             }
         };
 
@@ -138,6 +146,7 @@ impl<T> Drop for Slot<'_, T> {
 #[cfg(test)]
 mod tests {
     use crate::{Arena64, Slot};
+    use alloc::vec::Vec;
 
     #[test]
     fn it_grows() {
