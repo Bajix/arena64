@@ -1,4 +1,5 @@
 #![no_std]
+#![cfg_attr(feature = "strict_provenance", feature(strict_provenance))]
 
 extern crate alloc;
 
@@ -105,16 +106,33 @@ impl<T> Slot<'_, T> {
     }
 
     /// Reconstruct `Slot` from a tagged pointer
+    #[cfg(not(feature = "strict_provenance"))]
     pub unsafe fn from_raw(ptr: *mut ()) -> Self {
         Self {
-            arena: &*((ptr as usize & IDX_MASK) as *const Arena64<T>),
-            idx: ptr as usize * IDX,
+            arena: &*((ptr as usize & IDX_MASK) as *const _),
+            idx: ptr as usize & IDX,
+        }
+    }
+
+    /// Reconstruct `Slot` from a tagged pointer
+    #[cfg(feature = "strict_provenance")]
+    pub unsafe fn from_raw(ptr: *mut ()) -> Self {
+        Self {
+            arena: &*(ptr.map_addr(|addr| addr & IDX_MASK) as *const _),
+            idx: ptr as usize & IDX,
         }
     }
 
     /// Consumes `Slot`, converting into a raw pointer that points to the underlying arena with the index as the tag
-    pub unsafe fn into_raw(self) -> *mut () {
+    #[cfg(not(feature = "strict_provenance"))]
+    pub fn into_raw(self) -> *mut () {
         ((addr_of!(*self.arena) as usize) | self.idx) as *mut ()
+    }
+
+    /// Consumes `Slot`, converting into a raw pointer that points to the underlying arena with the index as the tag
+    #[cfg(feature = "strict_provenance")]
+    pub fn into_raw(self) -> *mut () {
+        addr_of!(*self.arena).map_addr(|addr| addr | self.idx) as *mut ()
     }
 }
 

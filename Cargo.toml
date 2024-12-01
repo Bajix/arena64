@@ -13,3 +13,7 @@ edition = "2021"
 
 [dependencies]
 once_cell = { version = "1.20", default-features = false, features = ["race", "alloc"] }
+
+[features]
+# Enable unstable `strict_provenance` language feature. See tracking issue: https://github.com/rust-lang/rust/issues/95228
+strict_provenance = []
