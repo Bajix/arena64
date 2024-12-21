@@ -11,12 +11,14 @@ use core::{
     ptr::addr_of,
     sync::atomic::{AtomicU64, Ordering},
 };
+
 use once_cell::race::OnceBox;
 
 const IDX: usize = (1 << 6) - 1;
 const IDX_MASK: usize = !IDX;
 
-/// An indexed arena designed to allow slots to be converted into/from raw-pointers
+/// An indexed arena designed to allow slots to be converted into/from
+/// raw-pointers
 #[repr(align(64))]
 pub struct Arena64<T> {
     occupancy: AtomicU64,
@@ -42,7 +44,8 @@ impl<T> Arena64<T> {
         }
     }
 
-    /// Inserts value into an unoccupied [`Slot`], allocating as necessary in increments of 64.
+    /// Inserts value into an unoccupied [`Slot`], allocating as necessary in
+    /// increments of 64.
     pub fn insert(&self, value: T) -> Slot<'_, T> {
         let mut occupancy = self.occupancy.load(Ordering::Acquire);
 
@@ -123,13 +126,15 @@ impl<T> Slot<'_, T> {
         }
     }
 
-    /// Consumes `Slot`, converting into a raw pointer that points to the underlying arena with the index as the tag
+    /// Consumes `Slot`, converting into a raw pointer that points to the
+    /// underlying arena with the index as the tag
     #[cfg(not(feature = "strict_provenance"))]
     pub fn into_raw(self) -> *mut () {
         ((addr_of!(*self.arena) as usize) | self.idx) as *mut ()
     }
 
-    /// Consumes `Slot`, converting into a raw pointer that points to the underlying arena with the index as the tag
+    /// Consumes `Slot`, converting into a raw pointer that points to the
+    /// underlying arena with the index as the tag
     #[cfg(feature = "strict_provenance")]
     pub fn into_raw(self) -> *mut () {
         addr_of!(*self.arena).map_addr(|addr| addr | self.idx) as *mut ()
@@ -163,8 +168,9 @@ impl<T> Drop for Slot<'_, T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Arena64, Slot};
     use alloc::vec::Vec;
+
+    use crate::{Arena64, Slot};
 
     #[test]
     fn it_grows() {
