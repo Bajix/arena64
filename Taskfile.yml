@@ -1,0 +1,21 @@
+version: "3"
+
+tasks:
+  default:
+    cmds:
+      - task: test
+      - task: clippy-tests
+
+  test:
+    cmds:
+      - cargo test -- --nocapture
+
+  clippy-tests:
+    cmds:
+      - cargo clippy --tests
+
+  doc:
+    cmds:
+      - cargo +nightly doc --open
+    env:
+      RUSTDOCFLAGS: --cfg docsrs
