@@ -6,7 +6,7 @@ license = "MIT"
 name = "arena64"
 repository = "https://github.com/Bajix/arena64"
 readme = "./README.md"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 rust-version = "1.84"
 
