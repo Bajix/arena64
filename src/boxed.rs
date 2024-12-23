@@ -4,15 +4,45 @@ use core::{
     fmt::Debug,
     mem::{self, forget, ManuallyDrop, MaybeUninit},
     ops::{Deref, DerefMut},
+    ptr::addr_of,
     sync::atomic::{AtomicU64, Ordering},
 };
 
 use crate::{IDX, IDX_MASK};
 
 #[repr(align(64))]
-struct Inner<T> {
-    occupancy: AtomicU64,
+pub(crate) struct Inner<T> {
+    pub(crate) occupancy: AtomicU64,
     slots: [UnsafeCell<MaybeUninit<T>>; 64],
+}
+
+impl<T> Inner<T> {
+    /// Get an unoccupied [`UninitSlot`] if available
+    pub(crate) fn get_uninit_slot(&self) -> Option<UninitSlot<T>> {
+        let mut occupancy = self.occupancy.load(Ordering::Acquire);
+
+        let idx = loop {
+            // Isolate lowest clear bit. See https://docs.rs/bitintr/latest/bitintr/trait.Blcic.html
+            let least_significant_bit = !occupancy & (occupancy.wrapping_add(1));
+
+            if least_significant_bit.ne(&0) {
+                occupancy = self
+                    .occupancy
+                    .fetch_or(least_significant_bit, Ordering::AcqRel);
+
+                if (occupancy & least_significant_bit).eq(&0) {
+                    break least_significant_bit.trailing_zeros();
+                }
+            } else {
+                return None;
+            }
+        };
+
+        Some(UninitSlot {
+            slab: addr_of!(*self),
+            idx: idx as usize,
+        })
+    }
 }
 
 /// A slab with 64 pre-allocated slots capable of being converted into/from
@@ -44,30 +74,7 @@ impl<T> Boxed64<T> {
 
     /// Get an unoccupied [`UninitSlot`] if available
     pub fn get_uninit_slot(&self) -> Option<UninitSlot<T>> {
-        let mut occupancy = self.inner().occupancy.load(Ordering::Acquire);
-
-        let idx = loop {
-            // Isolate lowest clear bit. See https://docs.rs/bitintr/latest/bitintr/trait.Blcic.html
-            let least_significant_bit = !occupancy & (occupancy.wrapping_add(1));
-
-            if least_significant_bit.ne(&0) {
-                occupancy = self
-                    .inner()
-                    .occupancy
-                    .fetch_or(least_significant_bit, Ordering::AcqRel);
-
-                if (occupancy & least_significant_bit).eq(&0) {
-                    break least_significant_bit.trailing_zeros();
-                }
-            } else {
-                return None;
-            }
-        };
-
-        Some(UninitSlot {
-            slab: self.inner,
-            idx: idx as usize,
-        })
+        self.inner().get_uninit_slot()
     }
 }
 

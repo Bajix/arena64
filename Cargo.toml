@@ -21,10 +21,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 default = ["extern_crate_alloc"]
 
 # Enable extern crate alloc
-extern_crate_alloc = ["once_cell"]
+extern_crate_alloc = ["crossbeam-utils"]
 
 [dependencies]
-once_cell = { version = "1.20", default-features = false, features = [
-    "race",
-    "alloc",
-], optional = true }
+crossbeam-utils = { version = "0.8", optional = true }

@@ -34,14 +34,15 @@ fn criterion_benchmark(criterion: &mut Criterion) {
             BenchmarkId::new("Arena64", batch_size),
             &batch_size,
             |b, batch_size| {
-                use arena64::arena::Arena64;
+                use arena64::arena::{Arena64, Slot};
 
                 b.iter(|| {
                     let arena: Arena64<usize> = Arena64::new();
 
-                    for i in 0..*batch_size {
-                        mem::forget(arena.insert(i));
-                    }
+                    let slots: Vec<Slot<usize>> =
+                        (0..*batch_size).map(|i| arena.insert(i)).collect();
+
+                    assert_eq!(slots, (0..*batch_size).collect::<Vec<usize>>());
                 });
             },
         );
