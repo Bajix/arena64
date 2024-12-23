@@ -1,12 +1,12 @@
 [package]
 authors = ["Thomas Sieverding <Thomas@bajix.com>"]
-description = "A concurrent arena providing mutually exclusive access over guarded indexes"
+description = "A concurrent arena providing mutually exclusive access over indexes"
 documentation = "https://docs.rs/arena64"
 license = "MIT"
 name = "arena64"
 repository = "https://github.com/Bajix/arena64"
 readme = "./README.md"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2021"
 rust-version = "1.84"
 

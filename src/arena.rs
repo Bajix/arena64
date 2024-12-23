@@ -8,7 +8,7 @@ use core::{
 use crossbeam_utils::atomic::AtomicConsume;
 
 use crate::boxed::Inner;
-pub use crate::boxed::{Slot, UninitSlot};
+pub use crate::boxed::Slot;
 /// An indexed arena designed to allow slots to be converted into/from
 /// raw pointers
 pub struct Arena64<T> {
