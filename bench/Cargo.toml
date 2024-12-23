@@ -1,0 +1,25 @@
+[package]
+authors = ["Thomas Sieverding <Thomas@bajix.com>"]
+edition = "2021"
+name = "arena64-bench"
+version = "0.0.1"
+description = "Benchmarks for arena64"
+readme = "../../README.md"
+license = "MIT"
+repository = "https://github.com/Bajix/arena64/"
+publish = false
+
+[dependencies]
+arena64 = { path = "../" }
+criterion = { version = "0.5" }
+
+[lib]
+test = false
+doctest = false
+bench = false
+
+[[bench]]
+name = "benchmarks"
+path = "src/lib.rs"
+harness = false
+doc = false

@@ -23,3 +23,9 @@ tasks:
       - cargo +nightly doc --open
     env:
       RUSTDOCFLAGS: --cfg docsrs
+
+  bench:
+    env:
+      RUSTFLAGS: -C target-cpu=native
+    cmds:
+      - cargo bench --profile release -p arena64-bench
