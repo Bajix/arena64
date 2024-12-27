@@ -13,7 +13,7 @@ use crate::{IDX, IDX_MASK};
 #[repr(align(64))]
 pub(crate) struct Inner<T> {
     pub(crate) occupancy: AtomicU64,
-    slots: [UnsafeCell<MaybeUninit<T>>; 64],
+    pub(crate) slots: [UnsafeCell<MaybeUninit<T>>; 64],
 }
 
 impl<T> Inner<T> {
@@ -138,8 +138,8 @@ impl<T> Drop for UninitSlot<T> {
 
 /// Provides exclusive access over an index of [`Boxed64`] until dropped
 pub struct Slot<T> {
-    slab: *const Inner<T>,
-    idx: usize,
+    pub(crate) slab: *const Inner<T>,
+    pub(crate) idx: usize,
 }
 
 impl<T> Slot<T> {
