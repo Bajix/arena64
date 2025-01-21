@@ -25,3 +25,10 @@ tasks:
       RUSTFLAGS: -C target-cpu=native
     cmds:
       - cargo bench --profile release -p arena64-bench
+
+  generate-bench-table:
+    env:
+      RUSTFLAGS: -C target-cpu=native
+      FILTER: Alloc/(?:Box<T>|Box<Box<T>>|Bump64|Arena64)/
+    cmds:
+      - cargo criterion --message-format=json -p arena64-bench -- $FILTER | criterion-table
