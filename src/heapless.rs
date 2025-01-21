@@ -9,8 +9,7 @@ use core::{
 
 use crate::{IDX, IDX_MASK};
 
-/// A slab with 64 pre-allocated slots capable of being converted into/from
-/// tagged raw pointers
+/// A slab with 64 pre-allocated slots
 #[repr(align(64))]
 pub struct Fixed64<T> {
     occupancy: AtomicU64,

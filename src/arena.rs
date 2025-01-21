@@ -9,7 +9,7 @@ use crossbeam_utils::atomic::AtomicConsume;
 
 use crate::boxed::Inner;
 pub use crate::boxed::Slot;
-/// An arena returning slots that can be converted into/from raw pointers
+/// A concurrent arena
 pub struct Arena64<T> {
     inner: AtomicPtr<Inner<T>>,
 }
@@ -87,7 +87,7 @@ impl<T> Drop for Arena64<T> {
     }
 }
 
-/// An arena returning slots that can be converted into/from raw pointers
+/// A bump allocator
 pub struct Bump64<T> {
     occupancy: u64,
     inner: *mut Inner<T>,

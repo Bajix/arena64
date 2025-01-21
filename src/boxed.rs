@@ -45,9 +45,8 @@ impl<T> Inner<T> {
     }
 }
 
-/// A slab with 64 pre-allocated slots capable of being converted into/from
-/// tagged raw pointers. The underlying heap allocation won't deallocate until
-/// all slots have dropped
+/// A slab with 64 pre-allocated slots. The underlying heap allocation won't
+/// deallocate until all slots have dropped
 #[repr(align(64))]
 pub struct Boxed64<T> {
     inner: *mut Inner<T>,
