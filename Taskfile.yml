@@ -10,10 +10,6 @@ tasks:
     cmds:
       - cargo test -- --nocapture
 
-  test-strict-provenance:
-    cmds:
-      - cargo test --features strict_provenance -- --nocapture
-
   clippy-tests:
     cmds:
       - cargo clippy --tests
