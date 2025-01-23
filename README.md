@@ -3,7 +3,7 @@
 [![Cargo](https://img.shields.io/crates/v/arena64.svg)](https://crates.io/crates/arena64)
 [![Documentation](https://docs.rs/arena64/badge.svg)](https://docs.rs/arena64)
 
-Arena64 provides data structures yielding slots that grant mutually exclusive access to interior cells. As slots can be converted into/from raw pointers tagged with the index using the low bits, this is well-suited for use-cases requiring thin-pointers.
+Arena64 provides data structures that pre-allocate storage for 64 elements at a time with insertions yielding slots that uniquely own access to the respective cell. Comparable to `Box`, slots can be converted into/from raw pointers by storing the index in the low-bits, making them well-suited for use cases requiring thin-pointers.
 
 ## Benchmark Results
 
