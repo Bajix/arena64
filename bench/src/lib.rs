@@ -53,24 +53,12 @@ fn criterion_benchmark(criterion: &mut Criterion) {
     for n in 6..12 {
         let batch_size: usize = 1 << n;
         alloc_bench.bench_with_input(
-            BenchmarkId::new("Box<T>", batch_size),
+            BenchmarkId::new("Box", batch_size),
             &batch_size,
             |b, batch_size| {
                 b.iter(|| {
                     for i in 0..*batch_size {
                         black_box(Box::new(i));
-                    }
-                });
-            },
-        );
-
-        alloc_bench.bench_with_input(
-            BenchmarkId::new("Box<Box<T>>", batch_size),
-            &batch_size,
-            |b, batch_size| {
-                b.iter(|| {
-                    for i in 0..*batch_size {
-                        black_box(Box::new(Box::new(i)));
                     }
                 });
             },

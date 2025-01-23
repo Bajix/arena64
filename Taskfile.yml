@@ -29,6 +29,6 @@ tasks:
   generate-bench-table:
     env:
       RUSTFLAGS: -C target-cpu=native
-      FILTER: Alloc/(?:Box<T>|Box<Box<T>>|Bump64|Arena64)/
+      FILTER: Alloc/(?:Box|Bump64|Arena64)/
     cmds:
       - cargo criterion --message-format=json -p arena64-bench -- $FILTER | criterion-table
