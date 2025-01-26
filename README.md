@@ -3,11 +3,9 @@
 [![Cargo](https://img.shields.io/crates/v/arena64.svg)](https://crates.io/crates/arena64)
 [![Documentation](https://docs.rs/arena64/badge.svg)](https://docs.rs/arena64)
 
-Arena64 provides data structures that pre-allocate storage for 64 elements at a time with insertions yielding slots that uniquely own access to the respective cell. Comparable to `Box`, slots can be converted into/from raw pointers by storing the index in the low-bits, making them well-suited for use cases requiring thin-pointers.
+Arena64 provides alternatives to `Box` that use pre-allocated storage while preserving the ability to convert into/from raw pointers.
 
 ## Benchmark Results
-
-### Alloc
 
 |            | `Box`                     | `Bump64`                         | `Arena64`                         |
 |:-----------|:--------------------------|:---------------------------------|:--------------------------------- |
