@@ -72,11 +72,7 @@ fn criterion_benchmark(criterion: &mut Criterion) {
 
                 b.iter(|| {
                     let mut arena: Bump64<usize> = Bump64::new();
-                    black_box(
-                        (0..*batch_size)
-                            .map(|i| arena.insert(i))
-                            .collect::<Vec<_>>(),
-                    );
+                    black_box((0..*batch_size).map(|i| arena.alloc(i)).collect::<Vec<_>>());
                 });
             },
         );
@@ -89,11 +85,7 @@ fn criterion_benchmark(criterion: &mut Criterion) {
 
                 b.iter(|| {
                     let arena: Arena64<usize> = Arena64::new();
-                    black_box(
-                        (0..*batch_size)
-                            .map(|i| arena.insert(i))
-                            .collect::<Vec<_>>(),
-                    );
+                    black_box((0..*batch_size).map(|i| arena.alloc(i)).collect::<Vec<_>>());
                 });
             },
         );

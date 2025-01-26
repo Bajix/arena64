@@ -56,8 +56,8 @@ impl<T> Arena64<T> {
         }
     }
 
-    /// Inserts value into an unoccupied [`Slot`]
-    pub fn insert(&self, value: T) -> Slot<T> {
+    /// Allocate value into an unoccupied [`Slot`]
+    pub fn alloc(&self, value: T) -> Slot<T> {
         let mut inner = self.inner.load_consume();
 
         loop {
@@ -107,8 +107,8 @@ impl<T> Bump64<T> {
         }
     }
 
-    /// Inserts value into the next [`Slot`]
-    pub fn insert(&mut self, value: T) -> Slot<T> {
+    /// Allocate value into the next [`Slot`]
+    pub fn alloc(&mut self, value: T) -> Slot<T> {
         loop {
             if !self.inner.is_null() {
                 let least_significant_bit = !self.occupancy & self.occupancy.wrapping_add(1);
@@ -170,7 +170,7 @@ mod tests {
     fn arena64_capacity_grows() {
         let arena = Arena64::new();
 
-        let slots: Vec<Slot<u32>> = (0..4096).map(|i| arena.insert(i)).collect();
+        let slots: Vec<Slot<u32>> = (0..4096).map(|i| arena.alloc(i)).collect();
 
         assert_eq!(slots, (0..4096).collect::<Vec<u32>>())
     }
@@ -179,7 +179,7 @@ mod tests {
     fn bump64_capacity_grows() {
         let mut arena = Bump64::new();
 
-        let slots: Vec<Slot<u32>> = (0..4096).map(|i| arena.insert(i)).collect();
+        let slots: Vec<Slot<u32>> = (0..4096).map(|i| arena.alloc(i)).collect();
 
         assert_eq!(slots, (0..4096).collect::<Vec<u32>>())
     }
