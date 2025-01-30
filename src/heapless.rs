@@ -1,10 +1,15 @@
 use core::{
+    borrow::{Borrow, BorrowMut},
     cell::UnsafeCell,
-    fmt::Debug,
+    fmt::{self},
+    future::Future,
+    hash::{Hash, Hasher},
     mem::{self, forget, ManuallyDrop, MaybeUninit},
     ops::{Deref, DerefMut},
+    pin::Pin,
     ptr::addr_of,
     sync::atomic::{AtomicU64, Ordering},
+    task::{Context, Poll},
 };
 
 use crate::{IDX, IDX_MASK};
@@ -158,6 +163,30 @@ impl<T> DerefMut for Slot<'_, T> {
     }
 }
 
+impl<T> AsRef<T> for Slot<'_, T> {
+    fn as_ref(&self) -> &T {
+        self
+    }
+}
+
+impl<T> AsMut<T> for Slot<'_, T> {
+    fn as_mut(&mut self) -> &mut T {
+        self
+    }
+}
+
+impl<T> Borrow<T> for Slot<'_, T> {
+    fn borrow(&self) -> &T {
+        self
+    }
+}
+
+impl<T> BorrowMut<T> for Slot<'_, T> {
+    fn borrow_mut(&mut self) -> &mut T {
+        self
+    }
+}
+
 impl<T> Drop for Slot<'_, T> {
     fn drop(&mut self) {
         unsafe { (*self.slab.slots[self.idx].get()).assume_init_drop() }
@@ -172,7 +201,7 @@ where
     T: PartialEq<T>,
 {
     fn eq(&self, other: &T) -> bool {
-        self.deref().eq(other)
+        PartialEq::eq(&**self, other)
     }
 }
 
@@ -181,18 +210,74 @@ where
     T: PartialEq<T>,
 {
     fn eq(&self, other: &Slot<T>) -> bool {
-        self.deref().eq(other)
+        PartialEq::eq(&**self, &**other)
     }
 }
 
 impl<T> Eq for Slot<'_, T> where T: PartialEq<T> {}
 
-impl<T> Debug for Slot<'_, T>
-where
-    T: Debug,
-{
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        self.deref().fmt(f)
+impl<T: PartialOrd> PartialOrd for Slot<'_, T> {
+    #[inline]
+    fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
+        PartialOrd::partial_cmp(&**self, &**other)
+    }
+    #[inline]
+    fn lt(&self, other: &Self) -> bool {
+        PartialOrd::lt(&**self, &**other)
+    }
+    #[inline]
+    fn le(&self, other: &Self) -> bool {
+        PartialOrd::le(&**self, &**other)
+    }
+    #[inline]
+    fn ge(&self, other: &Self) -> bool {
+        PartialOrd::ge(&**self, &**other)
+    }
+    #[inline]
+    fn gt(&self, other: &Self) -> bool {
+        PartialOrd::gt(&**self, &**other)
+    }
+}
+
+impl<T: Ord> Ord for Slot<'_, T> {
+    #[inline]
+    fn cmp(&self, other: &Self) -> core::cmp::Ordering {
+        Ord::cmp(&**self, &**other)
+    }
+}
+
+impl<T: Hash> Hash for Slot<'_, T> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        (**self).hash(state);
+    }
+}
+
+impl<T: fmt::Display> fmt::Display for Slot<'_, T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Display::fmt(&**self, f)
+    }
+}
+
+impl<T: fmt::Debug> fmt::Debug for Slot<'_, T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Debug::fmt(&**self, f)
+    }
+}
+
+impl<T> fmt::Pointer for Slot<'_, T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let ptr: *const T = &**self;
+        fmt::Pointer::fmt(&ptr, f)
+    }
+}
+
+impl<T> Unpin for Slot<'_, T> {}
+
+impl<F: Future + Unpin> Future for Slot<'_, F> {
+    type Output = F::Output;
+
+    fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        F::poll(Pin::new(&mut *self), cx)
     }
 }
 
