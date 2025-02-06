@@ -14,14 +14,7 @@ rust-version = "1.84"
 members = ["bench"]
 
 [package.metadata.docs.rs]
-all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
-[features]
-default = ["extern_crate_alloc"]
-
-# Enable extern crate alloc
-extern_crate_alloc = ["crossbeam-utils"]
-
 [dependencies]
-crossbeam-utils = { version = "0.8", optional = true }
+crossbeam-utils = { version = "0.8" }

@@ -7,8 +7,7 @@ use core::{
 
 use crossbeam_utils::atomic::AtomicConsume;
 
-use crate::boxed::Inner;
-pub use crate::boxed::Slot;
+use crate::boxed::{Inner, Slot};
 /// A concurrent arena
 pub struct Arena64<T> {
     inner: AtomicPtr<Inner<T>>,

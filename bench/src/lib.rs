@@ -22,20 +22,8 @@ fn criterion_benchmark(criterion: &mut Criterion) {
         });
     });
 
-    criterion.bench_function("Fixed64/64", |bencher| {
-        use arena64::heapless::Fixed64;
-
-        bencher.iter(|| {
-            let slab: Fixed64<usize> = Fixed64::new();
-
-            for i in 0..64 {
-                black_box(slab.get_uninit_slot().unwrap().insert(i));
-            }
-        });
-    });
-
     criterion.bench_function("Boxed64/64", |bencher| {
-        use arena64::boxed::Boxed64;
+        use arena64::Boxed64;
 
         bencher.iter(|| {
             let slab: Boxed64<usize> = Boxed64::new();
@@ -68,7 +56,7 @@ fn criterion_benchmark(criterion: &mut Criterion) {
             BenchmarkId::new("Bump64", batch_size),
             &batch_size,
             |b, batch_size| {
-                use arena64::arena::Bump64;
+                use arena64::Bump64;
 
                 b.iter(|| {
                     let mut arena: Bump64<usize> = Bump64::new();
@@ -81,7 +69,7 @@ fn criterion_benchmark(criterion: &mut Criterion) {
             BenchmarkId::new("Arena64", batch_size),
             &batch_size,
             |b, batch_size| {
-                use arena64::arena::Arena64;
+                use arena64::Arena64;
 
                 b.iter(|| {
                     let arena: Arena64<usize> = Arena64::new();
